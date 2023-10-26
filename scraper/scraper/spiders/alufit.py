@@ -17,17 +17,14 @@ class AlufitSpider(CrawlSpider):
     )
 
     def parse_item(self, response):
-        # response.css("table.table-product").getall() TABLE
-        # response.css("td.bb::text")[8].get().strip() FIELD
-        # response.css("td.nobb b::text")[8].get().strip() TEXT
-
         item = {}
+
         fields = response.css("td.bb::text").getall()
         texts = response.css("td.nobb b::text").getall()
 
         name = response.css("div.af-h1.af-h1-ha h1::text").get()
         price = response.css("span.af-product-price__value span::text").get()
-        position = response.css("li.breadcrumb-item span::text")[2].get()
+        position = response.css("li.breadcrumb-item span::text")[-1].get()
 
         for key, value in zip(fields, texts):
             if name or price or position is not None:
@@ -40,6 +37,17 @@ class AlufitSpider(CrawlSpider):
 
         return {"Адрес страницы": response.url, "Данные": item}
 
+
+# search_string= "Горизонтальные жалюзи 0221 Белый глянцевый 55х160 см"
+# word="Горизонтальные жалюзи"
+# lword=len(word)
+# start_index=search_string.find(word)
+# extracted_string= search_string[start_index:start_index+lword]
+# print(extracted_string)
+
+# response.css("table.table-product").getall() TABLE
+# response.css("td.bb::text")[8].get().strip() FIELD
+# response.css("td.nobb b::text")[8].get().strip() TEXT
 
 # item["Адрес страницы: "] = ""
 # item["Название: "] = ""
