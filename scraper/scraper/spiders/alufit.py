@@ -22,20 +22,22 @@ class AlufitSpider(CrawlSpider):
         fields = response.css("td.bb::text").getall()
         texts = response.css("td.nobb b::text").getall()
 
+        item["Адрес страницы:"] = response.url
         name = response.css("div.af-h1.af-h1-ha h1::text").get()
         price = response.css("span.af-product-price__value span::text").get()
-        position = response.css("li.breadcrumb-item span::text")[-1].get()
+        position = " ".join(
+            response.css("li.breadcrumb-item span::text")[-1].get().split()[0:2]
+        )
 
         for key, value in zip(fields, texts):
             if name or price or position is not None:
-                item["Название"] = name.strip()
-                item["Цена, руб"] = (
+                item["Название:"] = name.strip()
+                item["Цена, руб:"] = (
                     price.strip() + " " + response.css("span.ruble::text").get().strip()
                 )
-                item["Раздел"] = position.strip()
-            item[key.strip()] = value.strip()
-
-        return {"Адрес страницы": response.url, "Данные": item}
+                item["Раздел:"] = position.strip()
+            item[key.strip()] = value.strip().replace(", ", " | ").replace("/", " | ")
+        return item
 
 
 # search_string= "Горизонтальные жалюзи 0221 Белый глянцевый 55х160 см"
