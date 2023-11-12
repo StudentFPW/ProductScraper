@@ -1,9 +1,18 @@
 import requests
 import random
+import json
 
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from urllib.error import *
+
+url = "https://amigo.ru/search-by-tissues/?ELEMENT_ID="
+
+count_start = 271
+count_end = 500
+
+json_result = {"json": []}
+count_error = []
 
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
@@ -16,12 +25,18 @@ user_agents = [
 ]
 
 
-class ByUserRequest:
-    """
-    Класс ByUserRequest используется для извлечения информации с веб-страницы на основе URL-адреса,
-    предоставленного пользователем.
-    """
+def writer():
+    with open("data.json", "w", encoding="utf-8") as file:
+        file.write(
+            json.dumps(
+                json_result,
+                indent=4,
+                ensure_ascii=False,
+            )
+        )
 
+
+class ByUserRequest:
     def __init__(self, url):
         self.url = url
         self.items = {}
@@ -40,6 +55,10 @@ class ByUserRequest:
             .split(" /")[2]
         )
         self.items["Название"] = soup.find("h1", class_="page-title").text.strip()
+        self.items["Изображение"] = (
+            "https://amigo.ru"
+            + soup.find("a", class_="ribbon-informer-slider").attrs["href"]
+        )
 
         fields = soup.find("dl", class_="ribbon-informer-dl").find_all("dt")
         texts = soup.find("dl", class_="ribbon-informer-dl").find_all("dd")
@@ -50,33 +69,34 @@ class ByUserRequest:
         return self.items
 
 
-count_go = 271
-count_error = []
-
-# Предоставленный блок кода представляет собой цикл while, который выполняет итерацию от count_go
-# до тех пор, пока не достигнет 3000.
-while count_go < 3000:
+while count_start <= count_end:
     try:
-        urlopen(f"https://amigo.ru/search-by-tissues/?ELEMENT_ID={count_go}")
+        urlopen(url + str(count_start))
     except HTTPError as e:
-        print("HTTP error", e, count_go)
-        count_error.append(count_go)
-        count_go += 1
+        print("HTTP error", e, count_start)
+        count_error.append(count_start)
+        count_start += 1
     except URLError as e:
-        print("Opps ! Page not found!", e, count_go)
-        count_error.append(count_go)
-        count_go += 1
+        print("Opps ! Page not found!", e, count_start)
+        count_error.append(count_start)
+        count_start += 1
     else:
         try:
-            ByUserRequest(
-                f"https://amigo.ru/search-by-tissues/?ELEMENT_ID={count_go}"
-            ).getting()
+            data = ByUserRequest(url + str(count_start)).getting()
         except Exception as e:
-            print("Exception", e, count_go)
-            count_error.append(count_go)
-            count_go += 1
+            print("Exception", e, count_start)
+            count_error.append(count_start)
+            count_start += 1
         else:
-            ByUserRequest(
-                f"https://amigo.ru/search-by-tissues/?ELEMENT_ID={count_go}"
-            ).getting()
-            count_go += 1
+            print("Start import data to file", count_start)
+            json_result["json"].append(data)
+            count_start += 1
+
+if count_start == count_end + 1:
+    with open("error.json", "w", encoding="utf-8") as file:
+        print("Write final data to file")
+        print("Write error data to file")
+        writer()
+        file.write(json.dumps(count_error))
+
+# print(ByUserRequest("https://amigo.ru/search-by-tissues/?ELEMENT_ID=271").getting())
