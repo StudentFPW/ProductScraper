@@ -8,8 +8,14 @@ from urllib.error import *
 
 url = "https://amigo.ru/search-by-tissues/?ELEMENT_ID="
 
-count_start = 271
-count_end = 500
+print(
+    """
+      Сначала введите номер, с которого вы хотите начать
+      а затем введите конечный номер.
+    """
+)
+count_start = int(input("start count from = "))
+count_end = int(input("end count from = "))
 
 json_result = {"json": []}
 count_error = []
