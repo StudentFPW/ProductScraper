@@ -1,5 +1,9 @@
-# Scrapy
-# scrapy-user-agents
+Scrapy
+scrapy-user-agents
+
 beautifulsoup4==4.12.2
 requests==2.31.0
 lxml
+
+pandas
+openpyxl
